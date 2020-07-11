@@ -11,9 +11,9 @@ def data1():
     l2 = n.zeros((n_samples,2))
     l2[:,1] = 1.0
 
-    realL = n.concatenate((l1,l2),axis=0)
+    predY = n.concatenate((l1,l2),axis=0)
 
-    return n_samples,inputX,realL
+    return n_samples,inputX,predY
 
 
 
@@ -38,7 +38,7 @@ def data2():
         [1, 3]
     ])
 
-    realL = n.array([
+    predY = n.array([
         [1, 0],
         [1, 0],
         [1, 0],
@@ -56,7 +56,7 @@ def data2():
         [0, 1]
     ])
 
-    return n_samples,inputX,realL
+    return n_samples,inputX,predY
 
 
 def data3():
@@ -82,10 +82,10 @@ def data3():
     l2 = n.zeros((n_samples, 2))
     l2[:, 1] = 1.0
 
-    realL = n.concatenate((l1, l2), axis=0)
-    return n_samples,inputX,realL
+    predY = n.concatenate((l1, l2), axis=0)
+    return n_samples,inputX,predY
 
-n_samples,inputX,realL = data3()
+n_samples, inputX, predY = data3()
 
 
 
