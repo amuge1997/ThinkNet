@@ -85,7 +85,7 @@ def data3():
     predY = n.concatenate((l1, l2), axis=0)
     return n_samples,inputX,predY
 
-n_samples, inputX, predY = data3()
+n_samples, inputX, realY = data3()
 
 
 

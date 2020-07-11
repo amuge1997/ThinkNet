@@ -1,5 +1,5 @@
 from ThinkNet.Core import Sigmoid, Relu, Dense, Net, NLLoss, GD, MSELoss, toSoftmax, toOnehot, Adam
-from Data_Samples import inputX, predY, n_samples
+from Data_Samples import inputX, realY, n_samples
 import numpy as n, matplotlib.pyplot as p
 import matplotlib as mpl
 
@@ -22,17 +22,17 @@ if __name__ == '__main__':
     net = Net(layers, nll, adam)
 
     # 训练
-    epochs = 1000
+    epochs = 3000
     for epoch in range(epochs):
-        predY = net.forward(inputX, predY)
+        predY = net.forward(inputX, realY)
         if epoch % 100 == 0:
-            print(nll(predY, predY))
+            print(nll(predY, realY))
         net.backward()
         net.update()
 
     # 预测
     predY = net.predict(inputX)
-    print(predY)
+    print(toOnehot(predY))
 
     # 网格区域绘制
     x = n.arange(-5, 5, 0.05)
