@@ -23,7 +23,7 @@ class Optimizer:
         layersParams = []
         layersGrads = []
         for layer in layers:
-            if layer.type is 'weight':
+            if layer.type is 'neuron':
                 dcP = layer.getParams()
                 dcG = layer.getGrads()
 
@@ -41,7 +41,7 @@ class Optimizer:
         # 将更新值赋回至参数
         paramsn = 0
         for layer in layers:
-            if layer.type is 'weight':
+            if layer.type is 'neuron':
                 dcP = layer.getParams()
                 for k in dcP:
                     kp = k
@@ -83,11 +83,7 @@ class GD(Optimizer):
         super().__init__(lr)
 
     def _optim(self,grads):
-        # print('optim_')
-        # print(grads)
-        # print(self.lr)
         ret = - self.lr * grads
-        # print(ret)
         return ret
 
 

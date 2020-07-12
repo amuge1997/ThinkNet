@@ -25,8 +25,8 @@ if __name__ == '__main__':
     epochs = 3000
     for epoch in range(epochs):
         predY = net.forward(inputX, realY)
-        if epoch % 100 == 0:
-            print(nll(predY, realY))
+        if (epoch+1) % 100 == 0:
+            print('epoch {} loss {}'.format((epoch+1),nll(predY, realY)))
         net.backward()
         net.update()
 

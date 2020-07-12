@@ -8,6 +8,12 @@ class Layer:
         self.outputY = None
         self.type = None
 
+    def gradsInit(self):
+        pass
+
+    def paramsInit(self):
+        pass
+
     def forward(self,inputX):
         raise Exception('Layer is None')
 
