@@ -12,40 +12,40 @@ class Relu(ActivationLayer):
     def __init__(self):
         super().__init__()
 
-    def forward(self,inputX):
-        self.inputX = inputX
-        X = inputX
-        Y = n.maximum(X,0.0)
-        self.outputY = Y
-        return Y
+    def forward(self, inps):
+        self.inputX = inps
+        x = inps
+        y = n.maximum(x, 0.0)
+        self.outputY = y
+        return y
 
-    def backward(self,gradX):
-        X = self.inputX
-        gradY = gradX * n.where(X > 0.0, 1.0, 0.0)
-        return gradY
+    def backward(self, grads):
+        x = self.inputX
+        gz = grads * n.where(x > 0.0, 1.0, 0.0)
+        return gz
 
 
 class Sigmoid(ActivationLayer):
     def __init__(self):
         super().__init__()
 
-    def sigmoid(self,inputX):
-        Y = 1.0 / (1.0 + n.exp(- inputX))
-        return Y
+    def sigmoid(self, inps):
+        y = 1.0 / (1.0 + n.exp(- inps))
+        return y
 
-    def forward(self,inputX):
-        self.inputX = inputX
-        X = inputX
-        Y = self.sigmoid(X)
+    def forward(self, inps):
+        self.inputX = inps
+        x = inps
+        y = self.sigmoid(x)
 
-        self.outputY = Y
+        self.outputY = y
 
-        return Y
+        return y
 
-    def backward(self,gradX):
-        X = self.inputX
-        gradY = gradX * self.sigmoid(X) * ( 1 - self.sigmoid(X) )
-        return gradY
+    def backward(self, grads):
+        x = self.inputX
+        gz = grads * self.sigmoid(x) * (1 - self.sigmoid(x))
+        return gz
 
 
 

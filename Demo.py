@@ -1,38 +1,75 @@
 from ThinkNet.Core import Sigmoid, Relu, Dense, Net, NLLoss, GD, MSELoss, toSoftmax, toOnehot, Adam
 from Data_Samples import inputX, realY, n_samples
-import numpy as n, matplotlib.pyplot as p
+import numpy as n, matplotlib.pyplot as p, time
 import matplotlib as mpl
 
 if __name__ == '__main__':
 
     # 网络结构
     layers = [
-        Dense(2, 64),
+        Dense(2, 10),
         Relu(),
-        Dense(64, 64),
+        Dense(10, 10),
         Relu(),
-        Dense(64, 2),
+        Dense(10, 2),
+        Sigmoid()
     ]
     # 损失函数
     nll = NLLoss()
+    mse = MSELoss()
     # 优化器
     adam = Adam(1e-3)
+    gd = GD(1e-3)
 
     # 网络模型构建
-    net = Net(layers, nll, adam)
+    net = Net(layers, mse, adam)
+
+    dc = {
+        'fd': 0.0,
+        'bd': 0.0,
+        'up': 0.0
+    }
 
     # 训练
-    epochs = 3000
+    epochs = 5000
     for epoch in range(epochs):
+        start = time.time()
         predY = net.forward(inputX, realY)
-        if (epoch+1) % 100 == 0:
+        end = time.time()
+        runTime = end - start
+        dc['fd'] += runTime
+        # print('前向运行时间:', runTime)
+
+        if (epoch+1) % 500 == 0:
             print('epoch {} loss {}'.format((epoch+1),nll(predY, realY)))
+        start = time.time()
         net.backward()
+        end = time.time()
+        runTime = end - start
+        dc['bd'] += runTime
+        # print('后向运行时间:', runTime)
+
+        start = time.time()
         net.update()
+        end = time.time()
+        runTime = end - start
+        dc['up'] += runTime
+        # print('更新运行时间:', runTime)
+
+    sumTime = dc['fd'] + dc['bd'] + dc['up']
+    fdrate = dc['fd'] / sumTime
+    bdrate = dc['bd'] / sumTime
+    uprate = dc['up'] / sumTime
+
+    print('前向运行时间: {}s {}%'.format(round(dc['fd'], 2), round(fdrate * 100, 2)))
+    print('反向运行时间: {}s {}%'.format(round(dc['bd'], 2), round(bdrate * 100, 2)))
+    print('更新运行时间: {}s {}%'.format(round(dc['up'], 2), round(uprate * 100, 2)))
+    print('总时间: {}'.format(round(sumTime,2)))
 
     # 预测
     predY = net.predict(inputX)
-    print(toOnehot(predY))
+    # print(predY.shape)
+    # print(toOnehot(predY))
 
     # 网格区域绘制
     x = n.arange(-5, 5, 0.05)
