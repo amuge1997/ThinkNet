@@ -1,5 +1,5 @@
 import numpy as n
-from ThinkNet.Layer_w import NeuronLayer
+from ThinkNet.Layer_weights import NeuronLayer
 from ThinkNet.Layer import Layer
 
 

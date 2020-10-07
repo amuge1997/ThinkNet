@@ -2,8 +2,8 @@
 import numpy as n
 from .cTools import checkShape, toOnehot, toSoftmax
 from .Loss import NLLoss, MSELoss
-from .Layer_w import Dense
-from .Layer_a import Relu, Sigmoid
+from .Layer_weights import Dense
+from .Layer_activate import Relu, Sigmoid
 from .Optim import GD, Adam
 
 

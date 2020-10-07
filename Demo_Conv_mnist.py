@@ -2,7 +2,7 @@ from Read_Mnist import load_labels,load_images
 import numpy as np
 from ThinkNet.Core import Sigmoid, Dense,Net,NLLoss,GD,MSELoss, toOnehot,Adam, Relu
 from sklearn.metrics import accuracy_score
-from ThinkNet.Layer_Conv import Conv2d, Flatten
+from ThinkNet.Layer_conv import Conv2d, Flatten
 
 IntType = np.int64
 
@@ -68,12 +68,12 @@ if __name__ == '__main__':
         Relu(),
         Conv2d(filters=32, kernel_size=1, stride=(1, 1), input_shape=[32, 3, 3]),
         Relu(),
-        Conv2d(filters=5, kernel_size=1, stride=(1, 1), input_shape=[32, 3, 3]),
+        Conv2d(filters=1, kernel_size=1, stride=(1, 1), input_shape=[32, 3, 3]),
         Relu(),
 
         Flatten(),
 
-        Dense(5 * 3 * 3, 10),
+        Dense(1 * 3 * 3, 10),
         Sigmoid(),
 
         # Conv2d(filters=2, kernel_size=3, stride=(3, 3), is_padding=False, input_shape=[1, 16, 16]),
@@ -102,8 +102,8 @@ if __name__ == '__main__':
 
     net = Net(layers, nll, adam)
 
-    epochs = 200
-    batch_size = 128
+    epochs = 500
+    batch_size = 32
     for epoch in range(epochs):
         randi = np.random.randint(0, train_X.shape[0], (batch_size, ))
 
