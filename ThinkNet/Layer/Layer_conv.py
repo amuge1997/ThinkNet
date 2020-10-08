@@ -203,9 +203,9 @@ class Conv2d(AbleTrain):
         in_channels = self.in_channels
         pad_in_hw = self.pad_in_hw
         pad_out_hw = self.pad_out_hw
-        stride = self.stride_hw
+        stride_hw = self.stride_hw
 
-        features_col, _ = img_to_col(features=in_features, kernel_size=kernel_size, stride=stride)          # 图像转向量
+        features_col, _ = img_to_col(features=in_features, kernel_size=kernel_size, stride=stride_hw)          # 图像转向量
         kernel_col = kel_to_col(kernel)
         gard_features_col, grad_kernels_col, grad_bias = matmul_backward(grad, features_col, kernel_col)    # 反向传播
         gard_features = grad_col_to_img(        # 梯度向量转梯度图
@@ -214,7 +214,7 @@ class Conv2d(AbleTrain):
             in_channels,
             pad_in_hw,
             pad_out_hw,
-            stride
+            stride_hw
         )
         grad_kernels = grad_col_to_kel(grad_kernels_col, in_channels, kernel_size)
         if self.is_train:
