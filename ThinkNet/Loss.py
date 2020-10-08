@@ -1,12 +1,21 @@
-from .cTools import checkShape
 import numpy as n
+
+
+def check_shape(infunc):
+    def outfunc(ins, X1, X2):
+        if X1.shape != X2.shape:
+            raise Exception('数组形式不一致')
+        else:
+            ret = infunc(ins, X1, X2)
+            return ret
+    return outfunc
 
 
 class Loss:
     def __init__(self):
         pass
 
-    def __call__(self, predict_y, real_y):
+    def __call__(self, prds, labs):
         raise Exception('Loss is None')
 
     def loss(self, predict_y, real_y):
@@ -20,16 +29,16 @@ class MSELoss(Loss):
     def __init__(self):
         super().__init__()
 
-    @checkShape
-    def __call__(self, predict_y, real_y):
-        n_samples = predict_y.shape[0]
-        Y = n.sum((real_y - predict_y) ** 2) / n_samples
+    @check_shape
+    def __call__(self, prds, labs):
+        n_samples = prds.shape[0]
+        Y = n.sum((labs - prds) ** 2) / n_samples
         return Y
 
-    @checkShape
-    def grad(self, predict_y, real_y):
-        n_samples = predict_y.shape[0]
-        grad = (real_y - predict_y) * (-1) / n_samples
+    @check_shape
+    def grad(self, prds, labs):
+        n_samples = prds.shape[0]
+        grad = (labs - prds) * (-1) / n_samples
         return grad
 
 
@@ -37,23 +46,23 @@ class NLLoss(Loss):
     def __init__(self):
         super().__init__()
 
-    @checkShape
-    def __call__(self, predict_y, real_y):
-        n_samples = predict_y.shape[0]
+    @check_shape
+    def __call__(self, prds, labs):
+        n_samples = prds.shape[0]
 
-        a = n.exp(predict_y - n.max(predict_y, axis=1, keepdims=True))
+        a = n.exp(prds - n.max(prds, axis=1, keepdims=True))
         a = a / n.sum(a, axis=1, keepdims=True)
-        c = real_y * n.log(a)
+        c = labs * n.log(a)
         c = - n.sum(c, axis=1)
         c = n.sum(c)
         y = c / n_samples
 
         return y
 
-    @checkShape
-    def grad(self, predict_y, real_y):
-        n_samples = predict_y.shape[0]
-        grad = (n.copy(predict_y) - real_y)
+    @check_shape
+    def grad(self, prds, labs):
+        n_samples = prds.shape[0]
+        grad = (n.copy(prds) - labs)
         grad = grad / n_samples
         return grad
 

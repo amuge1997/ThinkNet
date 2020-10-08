@@ -1,6 +1,5 @@
 import numpy as n
-from ThinkNet.Layer_weights import NeuronLayer
-from ThinkNet.Layer import Layer
+from .Layer import AbleTrain
 
 
 # 已测试,应该没问题
@@ -126,11 +125,11 @@ def padding2d(image, kernel_size, stride_hw):
     return ret, pad_h, pad_w
 
 
-class Conv2d(NeuronLayer):
+class Conv2d(AbleTrain):
     def __init__(self, filters, kernel_size, input_shape, stride=(1, 1), is_padding=True, is_train=True):
         super().__init__()
 
-        self.is_train = is_train        # 是否训练参数
+        self.is_train = is_train
 
         in_channels, in_height, in_width = input_shape
         self.input_shape = input_shape  # 输入形式
@@ -149,10 +148,10 @@ class Conv2d(NeuronLayer):
         self.pad_out_hw = None          # 根据补零后的输入得到的输出的高宽
         self.pad = None                 # 补零参数,记录了高宽两个维度的补零
 
-        self.paramsInit()
-        self.gradsInit()
+        self.params_init()
+        self.grads_init()
 
-    def paramsInit(self):
+    def params_init(self):
         out_channels = self.out_channels
         in_channels = self.in_channels
         kernel_size = self.kernel_size
@@ -162,7 +161,7 @@ class Conv2d(NeuronLayer):
             'b': n.random.randn(out_channels,) * (1 / n.sqrt(out_channels + in_channels)),
         }
 
-    def gradsInit(self):
+    def grads_init(self):
         out_channels = self.out_channels
         in_channels = self.in_channels
         kernel_size = self.kernel_size
@@ -171,9 +170,9 @@ class Conv2d(NeuronLayer):
             'b': n.zeros((out_channels,))
         }
 
-    def forward(self, inputs):
-        self.inputX = inputs
-        self.ori_in_hw = inputs.shape[2:]
+    def forward(self, inps):
+        self.inps = inps
+        self.ori_in_hw = inps.shape[2:]
 
         kernel_size = self.kernel_size
         kernels = self.params['w']
@@ -182,19 +181,19 @@ class Conv2d(NeuronLayer):
         stride = self.stride_hw
         # 补零
         if self.is_padding:
-            inputs, pad_h, pad_w = padding2d(inputs, kernel_size, stride)
+            inps, pad_h, pad_w = padding2d(inps, kernel_size, stride)
             self.pad = (pad_h, pad_w)
         else:
             self.pad = ((0, 0), (0, 0))
 
         # 补零后记录
-        self.pad_inputs = inputs
-        self.pad_in_hw = (inputs.shape[2], inputs.shape[3])
+        self.pad_inputs = inps
+        self.pad_in_hw = (inps.shape[2], inps.shape[3])
 
-        features_col, pad_out_hw = img_to_col(inputs, kernel_size, stride)      # 图像转向量
+        features_col, pad_out_hw = img_to_col(inps, kernel_size, stride)      # 图像转向量
         self.pad_out_hw = pad_out_hw
         y = matmul_forward(features_col, kernels_col, bias, self.pad_out_hw)    # 卷积
-        self.outputY = y
+        self.outs = y
         return y
 
     def backward(self, grad):
@@ -223,83 +222,6 @@ class Conv2d(NeuronLayer):
             self.grads['b'] = grad_bias
         gard_features = re_padding2d(gard_features, self.pad)
         return gard_features
-
-
-class ToolsLayer(Layer):
-    def __init__(self):
-        super().__init__()
-        self.type = 'tools'
-
-
-class Flatten(ToolsLayer):
-    def __init__(self):
-        super().__init__()
-        self.ori_shape = None
-
-    def forward(self, x):
-        self.inputX = x
-        self.ori_shape = x.shape
-        x = n.reshape(x, [x.shape[0], -1])
-        return x
-
-    def backward(self, grad):
-        return n.reshape(grad, self.ori_shape)
-
-
-class MaxPool2D(ToolsLayer):
-    def __init__(self, stride=(2, 2)):
-        super().__init__()
-        self.mask = None
-        self.stride = stride
-
-    def forward(self, inputs):
-        # inputs : N, C, H, W
-        n_samples, channels, height, width = inputs.shape
-        stride_h, stride_w = self.stride
-        kernel_size_h = stride_h
-        kernel_size_w = stride_w
-        if ((height - kernel_size_h + 1) - 1) % stride_h != 0 or ((width - kernel_size_w + 1) - 1) % stride_w:
-            raise Exception('error')
-        sum_h = int(((height - kernel_size_h + 1) - 1) / stride_h + 1)
-        sum_w = int(((width - kernel_size_w + 1) - 1) / stride_w + 1)
-        ret = n.zeros((n_samples, channels, sum_h, sum_w))
-        mask = n.zeros_like(inputs)
-        for hi in range(sum_h):
-            for wi in range(sum_w):
-                anchor_h = hi * stride_h
-                anchor_w = wi * stride_w
-                patch = inputs[:, :, anchor_h:anchor_h+kernel_size_h, anchor_w:anchor_w+kernel_size_w]
-                patch = n.reshape(patch, [n_samples, channels, -1])
-                argmax = n.argmax(patch, axis=2)
-                col = mask[:, :, anchor_h:anchor_h + stride_h, anchor_w:anchor_w + stride_w]
-                col = n.reshape(col, [n_samples, channels, stride_h * stride_w])
-
-                for ni in range(n_samples):
-                    for ci in range(channels):
-                        col[ni, ci, argmax[ni, ci]] = 1
-                        ret[ni, ci, hi, wi] = patch[ni, ci, argmax[ni, ci]]
-                col = n.reshape(col, [n_samples, channels, stride_h, stride_w])
-                mask[:, :, anchor_h:anchor_h + stride_h, anchor_w:anchor_w + stride_w] = col
-        self.mask = mask
-        return ret
-
-    def backward(self, grad):
-        # grad : N, C, H, W
-        mask = self.mask
-        stride_h, stride_w = self.stride
-        n_samples, channels, sum_h, sum_w = grad.shape
-        ret = n.zeros((n_samples, channels, sum_h*stride_h, sum_w*stride_w))
-        for hi in range(0, sum_h):
-            for wi in range(0, sum_w):
-                anchor_h = hi * stride_h
-                anchor_w = wi * stride_w
-                for ni in range(n_samples):
-                    for ci in range(channels):
-                        patch = grad[ni, ci, hi, wi] * n.ones((stride_h, stride_w))
-                        patch_mask = mask[ni, ci, anchor_h:anchor_h + stride_h, anchor_w:anchor_w + stride_w]
-                        patch = patch * patch_mask
-                        ret[ni, ci, anchor_h:anchor_h + stride_h, anchor_w:anchor_w + stride_w] = patch
-        return ret
 
 
 if __name__ == '__main__':

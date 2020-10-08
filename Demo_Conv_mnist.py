@@ -1,8 +1,9 @@
-from Read_Mnist import load_labels,load_images
+from Read_Mnist import load_labels, load_images
 import numpy as np
-from ThinkNet.Core import Sigmoid, Dense,Net,NLLoss,GD,MSELoss, toOnehot,Adam, Relu
+from ThinkNet import Sigmoid, Dense, Net, NLLoss, GD, MSELoss, to_onehot, Adam, Relu
 from sklearn.metrics import accuracy_score
-from ThinkNet.Layer_conv import Conv2d, Flatten
+from ThinkNet.Layer.Layer_conv import Conv2d
+from ThinkNet.Layer.Layer_tools import Flatten
 
 IntType = np.int64
 
@@ -110,36 +111,29 @@ if __name__ == '__main__':
         batch_x = train_X[randi]
         batch_y = train_y[randi]
 
-        predL = net.forward(batch_x, batch_y)
-
-        ls = []
-        predd = toOnehot(predL)
-        for i in predd:
-            ls.append(np.argmax(i))
+        prds = net.forward(batch_x, batch_y)
+        prds_int = [np.argmax(i) for i in prds]
         batch_yy = train_y_[randi]
-        acc = accuracy_score(batch_yy, ls)
+        acc = accuracy_score(batch_yy, prds_int)
 
         if (epoch+1) % 1 == 0:
-            loss = np.sqrt(np.sum((predL - batch_y) ** 2)) / batch_x.shape[0]
-            print('epoch {}:{}'.format(epoch+1,loss))
-            print('epoch {}:{}'.format(epoch+1,acc))
+            loss = np.sqrt(np.sum((prds - batch_y) ** 2)) / batch_x.shape[0]
+            print('epoch {}:{}'.format(epoch+1, loss))
+            print('epoch {}:{}'.format(epoch+1, acc))
             print()
         net.backward()
         net.update()
 
     n_test = 256
-    inputX = train_X[0:n_test]
+    inps = train_X[0:n_test]
 
-    pred = net.predict(inputX)
-    pred = toOnehot(pred)
-    ls = []
-    for i in pred:
-        ls.append(np.argmax(i))
+    prds = net.predict(inps)
+    prds_int = [np.argmax(i) for i in prds]
 
-    realY = train_y_[0:n_test]
-    acc = accuracy_score(realY, ls)
-    print(ls)
-    print(realY)
+    labs = train_y_[0:n_test]
+    acc = accuracy_score(labs, prds_int)
+    print(prds)
+    print(labs)
     print(acc)
 
     # 要想进行对比，必须尽量减少全连接单元数量，如只要10到20个，否则即使卷积层随机参数并禁止训练，网络仍然有出色的性能

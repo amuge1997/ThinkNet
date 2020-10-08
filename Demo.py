@@ -1,6 +1,8 @@
-from ThinkNet.Core import Sigmoid, Relu, Dense, Net, NLLoss, GD, MSELoss, toSoftmax, toOnehot, Adam
+from ThinkNet import Sigmoid, Relu, Dense, Net, NLLoss, GD, MSELoss, to_onehot, to_softmax, Adam
 from Data_Samples import inputX, realY, n_samples
-import numpy as n, matplotlib.pyplot as p, time
+import numpy as n
+import matplotlib.pyplot as p
+import time
 import matplotlib as mpl
 
 if __name__ == '__main__':
@@ -69,7 +71,7 @@ if __name__ == '__main__':
     # 预测
     predY = net.predict(inputX)
     # print(predY.shape)
-    # print(toOnehot(predY))
+    # print(to_onehot(predY))
 
     # 网格区域绘制
     x = n.arange(-5, 5, 0.05)

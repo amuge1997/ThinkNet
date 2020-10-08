@@ -1,21 +1,14 @@
 
-import numpy as n
-from .cTools import checkShape, toOnehot, toSoftmax
-from .Loss import NLLoss, MSELoss
-from .Layer_weights import Dense
-from .Layer_activate import Relu, Sigmoid
-from .Optim import GD, Adam
-
 
 class Net:
-    def __init__(self, layers, loss, optim):
+    def __init__(self, layers, loss, opt):
         self.layers = layers
         self.loss = loss
-        self.optim = optim
-        self.inputX = None
-        self.realL = None
+        self.opt = opt
+        self.inps = None
+        self.labs = None
 
-        self.optim.setNet(layers)
+        self.opt.set_net(layers)
 
     def predict(self, inps):
         layers = self.layers
@@ -28,8 +21,8 @@ class Net:
         return result
 
     def forward(self, inps, labs):
-        self.inputX = inps
-        self.realL = labs
+        self.inps = inps
+        self.labs = labs
 
         layers = self.layers
         x = inps
@@ -39,19 +32,18 @@ class Net:
         return result
 
     def backward(self):
-        realL = self.realL
+        labs = self.labs
         loss = self.loss
         layers = self.layers
 
-        predL = layers[-1].outputY
-
-        grad = loss.grad(predL,realL)
+        prds = layers[-1].outs
+        grad = loss.grad(prds, labs)
         for layer in layers[::-1]:
             grad = layer.backward(grad)
 
     def update(self):
-        optim = self.optim
-        optim.optim()
+        opt = self.opt
+        opt.opt_fn()
 
 
 
